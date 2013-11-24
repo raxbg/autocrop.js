@@ -40,7 +40,8 @@ HTMLImageElement.prototype.has_mouseover_fired = false;
 HTMLImageElement.prototype.realAddEventListener = HTMLImageElement.prototype.addEventListener;
 
 HTMLImageElement.prototype.autocrop_apply = function(settings) {
-	settings = typeof settings == 'undefined' ? {} : settings;
+	//TODO: make default options list and merge with settings
+	settings = (typeof settings == 'undefined') ? {} : settings;
 	autocrop.canvas.width = this.width;
 	autocrop.canvas.height = this.height;
 	var autocrop_ctx = autocrop.canvas.getContext('2d');
@@ -54,6 +55,7 @@ HTMLImageElement.prototype.autocrop_apply = function(settings) {
 		item_selector.selector = item_selector.item.nodeName.toLowerCase() + (item_class==null ? '' : ('.' + item_class.replace(/\s+/g, '.'))) + ' ' + item_selector.selector;
 		item_selector.item = item_selector.item.parentNode;
 	}
+	//TODO: create 1 base selector, then build pseudo selectors from it (only for those pseudo selectors for which we have settings)
 	item_selector.selector = item_selector.selector.substr(0, item_selector.selector.length-1);
 	//item_selector.selector_hover = item_selector.selector + ':hover{}';
    	item_selector.selector += '.' + autocrop.hover_class + ' {'+ (typeof settings.hover == 'undefined' ? '' : settings.hover) +'}';
@@ -62,27 +64,30 @@ HTMLImageElement.prototype.autocrop_apply = function(settings) {
 	//lastStyleSheet.insertRule(item_selector.selector_hover, lastStyleSheet.cssRules.length);
 }
 
+/**
+ * Override the default addEventListener function
+ * The idea is to set an autocrop specific function as the first event handler,
+ * so it can evenually block an event from firing if neccessary
+ */
 HTMLImageElement.prototype.addEventListener = function(a, b, c) {
-
 	if (this.patchedEvents.indexOf(a) == -1) {
 		this.patchedEvents.push(a);
-		this.realAddEventListener(a, function(e) {
-
-			autocrop.item_pos = autocrop.item_position(e.target);
-			autocrop.pixelCoords = {x: e.pageX - autocrop.item_pos.x, y: e.pageY - autocrop.item_pos.y};
+		this.realAddEventListener(a, function(e) { autocrop.item_pos = autocrop.item_position(e.target); autocrop.pixelCoords = {x: e.pageX - autocrop.item_pos.x, y: e.pageY - autocrop.item_pos.y};
 			autocrop.alphaPixel = (4 * this.map.width * autocrop.pixelCoords.y) + (4 * autocrop.pixelCoords.x) + 3;
 
-			if (this.map.data[autocrop.alphaPixel] == 0) {
+			if (this.map.data[autocrop.alphaPixel] == 0) {//event is over an alpha pixel
 				e.stopImmediatePropagation();
-				if (this.has_mouseover_fired) {
+				if (this.has_mouseover_fired) {//Mouse is in the image and just got from non-alpha pixel into alpha pixel. We need to fire a mouseout event so event handlers for mouseout can run.
 					this.has_mouseover_fired = false;
 					this.classList.remove(autocrop.hover_class);
+					debugger;
 					//this.dispatchEvent(new Event('mouseout'));
 				}
 			} else {
 				if (!this.has_mouseover_fired) {
 					this.has_mouseover_fired = true;
 					this.classList.add(autocrop.hover_class);
+					debugger;
 				/*	var mouseoverEvent = document.createEvent ("MouseEvent");
 					mouseoverEvent.initMouseEvent ("mouseover", true, true, window, 0,
 						e.screenX, e.screenY, e.clientX, e.clientY,
@@ -91,16 +96,13 @@ HTMLImageElement.prototype.addEventListener = function(a, b, c) {
 					this.dispatchEvent(mouseoverEvent);*/
 				}
 			}
-
 		});
 	}
-
-	this.realAddEventListener(a, b, c);
-
+	this.realAddEventListener.apply(this, arguments);
 }
 
-HTMLImageElement.prototype.autocrop = function(settings) {
-	autocrop.queue.push({item:this, options: settings});
+HTMLImageElement.prototype.autocrop = function(opts) {
+	autocrop.queue.push({item:this, options: opts});
 	return this;
 }
 
