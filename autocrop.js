@@ -80,14 +80,12 @@ HTMLImageElement.prototype.addEventListener = function(a, b, c) {
 				if (this.has_mouseover_fired) {//Mouse is in the image and just got from non-alpha pixel into alpha pixel. We need to fire a mouseout event so event handlers for mouseout can run.
 					this.has_mouseover_fired = false;
 					this.classList.remove(autocrop.hover_class);
-					debugger;
 					//this.dispatchEvent(new Event('mouseout'));
 				}
 			} else {
 				if (!this.has_mouseover_fired) {
 					this.has_mouseover_fired = true;
 					this.classList.add(autocrop.hover_class);
-					debugger;
 				/*	var mouseoverEvent = document.createEvent ("MouseEvent");
 					mouseoverEvent.initMouseEvent ("mouseover", true, true, window, 0,
 						e.screenX, e.screenY, e.clientX, e.clientY,
