@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script type="text/javascript" src="autocrop.js"></script>
+		<link rel="stylesheet" type="text/css" href="dummy.css"/>
+	</head>
+	<body>
+		<img id="testImg" src="arrow-right.png" />
+		<script type="text/javascript">
+			document.getElementById('testImg').autocrop().addEventListener('click', function(){
+				document.getElementsByTagName('body')[0].style.background = 'rgb('+Math.floor(Math.random()*100)+', '+Math.floor(Math.random()*100)+', '+Math.floor(Math.random()*100)+')';
+			});
+		</script>
+	</body>
+</html>
