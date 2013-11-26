@@ -1,2 +1,3 @@
 - When setting border for the image, set it around the visible parts
 - Support for custom ignore rgba color. This can be an option which is array with 4 elements representing the R,G,B and Alpha channels.
+- If event fired on alpha pixel, try to pass the event to the nex element beneath the image at same
